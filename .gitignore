@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+build/
+dist/
+
+# Secrets / local config
+.env
+
+# Fine-tuned model artifacts (large binaries, don't belong in git)
+finetune/checkpoints/
+finetune/data/*.jsonl
+*.safetensors
+*.bin
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Test/coverage
+.pytest_cache/
+.coverage
+htmlcov/
