@@ -23,3 +23,14 @@ def fetch_pr_diff(owner: str, repo: str, pr_number: int, token: str) -> str:
     response = requests.get(url, headers=headers, timeout=30)
     response.raise_for_status()
     return response.text
+
+
+def post_pr_comment(owner: str, repo: str, pr_number: int, body: str, token: str) -> str:
+    url = f"{GITHUB_API}/repos/{owner}/{repo}/issues/{pr_number}/comments"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+    }
+    response = requests.post(url, headers=headers, json={"body": body}, timeout=30)
+    response.raise_for_status()
+    return response.json()["html_url"]
