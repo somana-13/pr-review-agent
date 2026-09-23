@@ -13,6 +13,11 @@ dependencies = [
     "langgraph>=0.2",
     "semgrep>=1.70",
     "ruff>=0.6",
+    "torch>=2.4",
+    "transformers>=4.44",
+    "peft>=0.12",
+    "datasets>=2.20",
+    "scikit-learn>=1.5",
 ]
 
 [project.optional-dependencies]
