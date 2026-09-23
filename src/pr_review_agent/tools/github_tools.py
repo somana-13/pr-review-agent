@@ -1,4 +1,6 @@
 import re
+import subprocess
+import tempfile
 
 import requests
 
@@ -23,6 +25,29 @@ def fetch_pr_diff(owner: str, repo: str, pr_number: int, token: str) -> str:
     response = requests.get(url, headers=headers, timeout=30)
     response.raise_for_status()
     return response.text
+
+
+def get_pr_head(owner: str, repo: str, pr_number: int, token: str) -> dict:
+    url = f"{GITHUB_API}/repos/{owner}/{repo}/pulls/{pr_number}"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+    }
+    response = requests.get(url, headers=headers, timeout=30)
+    response.raise_for_status()
+    data = response.json()
+    return {"clone_url": data["head"]["repo"]["clone_url"], "ref": data["head"]["ref"]}
+
+
+def clone_pr_workspace(clone_url: str, ref: str) -> str:
+    workspace = tempfile.mkdtemp(prefix="pr-review-")
+    subprocess.run(
+        ["git", "clone", "--depth", "1", "--branch", ref, clone_url, workspace],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return workspace
 
 
 def post_pr_comment(owner: str, repo: str, pr_number: int, body: str, token: str) -> str:
