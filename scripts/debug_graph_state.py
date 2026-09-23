@@ -2,7 +2,7 @@ from pr_review_agent.config import settings
 from pr_review_agent.graph.build import build_graph
 from pr_review_agent.tools.github_tools import fetch_pr_diff
 
-owner, repo, pr_number = "somana-13", "pr-review-agent-testbed", 1
+owner, repo, pr_number = "somana-13", "pr-review-agent-testbed", 2
 diff = fetch_pr_diff(owner, repo, pr_number, settings.github_token)
 
 result = build_graph().invoke({"diff": diff, "owner": owner, "repo": repo, "pr_number": pr_number})
