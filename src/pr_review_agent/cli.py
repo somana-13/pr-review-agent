@@ -1,7 +1,7 @@
 import typer
 
-from pr_review_agent.baseline import baseline_review
 from pr_review_agent.config import settings
+from pr_review_agent.graph.build import build_graph
 from pr_review_agent.tools.github_tools import fetch_pr_diff, parse_pr_url, post_pr_comment
 
 app = typer.Typer()
@@ -20,7 +20,8 @@ def review(pr_url: str, post: bool = False):
     diff = fetch_pr_diff(owner, repo, pr_number, settings.github_token)
     typer.echo(diff)
     typer.echo("\n--- Review ---\n")
-    review_text = baseline_review(diff)
+    result = build_graph().invoke({"diff": diff})
+    review_text = result["final_review"]
     typer.echo(review_text)
 
     if post:
