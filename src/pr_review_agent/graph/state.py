@@ -7,6 +7,7 @@ class ReviewState(TypedDict):
     owner: str
     repo: str
     pr_number: int
+    workspace_path: str
     security_findings: Annotated[list[str], operator.add]
     test_coverage_findings: Annotated[list[str], operator.add]
     style_findings: Annotated[list[str], operator.add]
