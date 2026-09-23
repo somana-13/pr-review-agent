@@ -12,4 +12,5 @@ class ReviewState(TypedDict):
     test_coverage_findings: Annotated[list[str], operator.add]
     style_findings: Annotated[list[str], operator.add]
     tool_call_log: Annotated[list[str], operator.add]
+    guardrail_flags: Annotated[list[str], operator.add]
     final_review: str
