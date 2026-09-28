@@ -23,4 +23,12 @@ def synthesizer(state: ReviewState) -> dict:
     )
     messages = [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=findings)]
     response = llm.invoke(messages)
-    return {"final_review": response.content}
+
+    # Append the routing decision deterministically rather than trusting the
+    # LLM's summarization to preserve it — the classifier's skip/run choice
+    # must stay visible in the final comment regardless of what looks
+    # "notable" to the synthesizer.
+    routing_notes = [entry for entry in state["tool_call_log"] if entry.startswith("planner_router:")]
+    footer = ("\n\n---\n" + "\n".join(routing_notes)) if routing_notes else ""
+
+    return {"final_review": response.content + footer}

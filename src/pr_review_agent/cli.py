@@ -20,7 +20,9 @@ def review(pr_url: str, post: bool = False):
     diff = fetch_pr_diff(owner, repo, pr_number, settings.github_token)
     typer.echo(diff)
     typer.echo("\n--- Review ---\n")
-    result = build_graph().invoke({"diff": diff, "owner": owner, "repo": repo, "pr_number": pr_number})
+    result = build_graph().invoke(
+        {"diff": diff, "owner": owner, "repo": repo, "pr_number": pr_number, "security_findings": []}
+    )
     review_text = result["final_review"]
     typer.echo(review_text)
 

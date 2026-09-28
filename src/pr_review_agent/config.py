@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     bedrock_model_id: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
     guardrail_id: str
     guardrail_version: str = "DRAFT"
+    classifier_adapter_path: str = "finetune/checkpoints/lora-adapter"
 
 
 settings = Settings()

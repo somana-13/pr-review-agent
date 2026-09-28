@@ -60,6 +60,10 @@ def main() -> None:
     print(f"chosen threshold: {threshold:.3f} (target min recall: {MIN_RECALL})")
     print(f"precision: {precision:.3f}  recall: {recall:.3f}  f1: {f1:.3f}")
 
+    metadata_path = ADAPTER_DIR / "threshold.json"
+    metadata_path.write_text(json.dumps({"threshold": threshold, "min_recall": MIN_RECALL}))
+    print(f"Wrote threshold to {metadata_path}")
+
 
 if __name__ == "__main__":
     main()
