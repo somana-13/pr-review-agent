@@ -1,0 +1,37 @@
+name: PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    # fork PRs get a read-only default token -- posting would just fail, so
+    # skip them cleanly instead of a confusing permissions error. The CLI
+    # (PAT-authenticated) is the intended way to review arbitrary PRs.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Run PR review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+          GUARDRAIL_ID: ${{ vars.GUARDRAIL_ID }}
+          GUARDRAIL_VERSION: DRAFT
+          CLASSIFIER_ADAPTER_PATH: somana13/pr-review-agent-classifier
+        run: pr-review review ${{ github.event.pull_request.html_url }} --post

@@ -3,6 +3,7 @@ from functools import cache
 from pathlib import Path
 
 import torch
+from huggingface_hub import hf_hub_download
 from peft import PeftModel
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
@@ -23,7 +24,13 @@ def _load_classifier():
 
 @cache
 def get_threshold() -> float:
-    metadata_path = Path(settings.classifier_adapter_path) / "threshold.json"
+    adapter_path = Path(settings.classifier_adapter_path)
+    if adapter_path.exists():
+        metadata_path = adapter_path / "threshold.json"
+    else:
+        # not a local path -- treat it as a Hugging Face Hub repo id, same
+        # as from_pretrained does implicitly for the model/tokenizer below
+        metadata_path = Path(hf_hub_download(repo_id=settings.classifier_adapter_path, filename="threshold.json"))
     return json.loads(metadata_path.read_text())["threshold"]
 
 
