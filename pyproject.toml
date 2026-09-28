@@ -28,6 +28,9 @@ dev = [
 [project.scripts]
 pr-review = "pr_review_agent.cli:app"
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
