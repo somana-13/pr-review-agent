@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     guardrail_id: str
     guardrail_version: str = "DRAFT"
     classifier_adapter_path: str = "finetune/checkpoints/lora-adapter"
+    hf_token: str = ""
 
 
 settings = Settings()

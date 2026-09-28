@@ -36,17 +36,34 @@ def get_pr_head(owner: str, repo: str, pr_number: int, token: str) -> dict:
     response = requests.get(url, headers=headers, timeout=30)
     response.raise_for_status()
     data = response.json()
-    return {"clone_url": data["head"]["repo"]["clone_url"], "ref": data["head"]["ref"]}
+    return {
+        "clone_url": data["head"]["repo"]["clone_url"],
+        "ref": data["head"]["ref"],
+        "sha": data["head"]["sha"],
+    }
 
 
-def clone_pr_workspace(clone_url: str, ref: str) -> str:
+def clone_pr_workspace(clone_url: str, ref: str, sha: str) -> str:
     workspace = tempfile.mkdtemp(prefix="pr-review-")
-    subprocess.run(
+    branch_clone = subprocess.run(
         ["git", "clone", "--depth", "1", "--branch", ref, clone_url, workspace],
+        capture_output=True,
+        text=True,
+    )
+    if branch_clone.returncode == 0:
+        return workspace
+
+    # the branch may have been deleted (e.g. a merged PR whose source branch
+    # was cleaned up) -- fall back to fetching the exact commit directly,
+    # which GitHub still allows even once no branch points to it
+    subprocess.run(["git", "init", workspace], check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", "-C", workspace, "fetch", "--depth", "1", clone_url, sha],
         check=True,
         capture_output=True,
         text=True,
     )
+    subprocess.run(["git", "-C", workspace, "checkout", "FETCH_HEAD"], check=True, capture_output=True, text=True)
     return workspace
 
 
