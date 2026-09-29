@@ -181,3 +181,4 @@ tests/unit/                # fast, deterministic tests (no network calls)
 scripts/                  # diagnostic/debug scripts used while building this
 .github/workflows/         # ci.yml (lint+test), pr-review.yml (auto-review this repo's own PRs)
 ```
+
