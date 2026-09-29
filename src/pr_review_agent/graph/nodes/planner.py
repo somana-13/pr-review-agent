@@ -15,8 +15,10 @@ def planner_router(state: ReviewState) -> dict:
 
     log = [f"planner_router: score={score:.3f} < threshold={threshold:.3f} -> skipping security_specialist"]
     skip_note = [
-        f"Security specialist skipped: classifier scored this diff as not "
-        f"security-relevant (score={score:.3f}, threshold={threshold:.3f})."
+        (
+            f"Security specialist skipped: classifier scored this diff as not "
+            f"security-relevant (score={score:.3f}, threshold={threshold:.3f})."
+        )
     ]
     return {"security_relevant": False, "tool_call_log": log, "security_findings": skip_note}
 

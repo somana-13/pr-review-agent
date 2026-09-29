@@ -47,6 +47,7 @@ def clone_pr_workspace(clone_url: str, ref: str, sha: str) -> str:
     workspace = tempfile.mkdtemp(prefix="pr-review-")
     branch_clone = subprocess.run(
         ["git", "clone", "--depth", "1", "--branch", ref, clone_url, workspace],
+        check=False,  # inspecting returncode ourselves below, not raising
         capture_output=True,
         text=True,
     )

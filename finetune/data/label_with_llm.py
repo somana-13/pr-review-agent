@@ -62,7 +62,7 @@ def label_pool() -> None:
                 out_file.write(json.dumps(labeled) + "\n")
                 out_file.flush()
                 labeled_count += 1
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001 -- best-effort batch job, any failure should be skipped, not fatal
                 errors += 1
                 print(f"  skipped one example due to error: {e}")
             if i % 25 == 0 or i == len(examples):
