@@ -1,6 +1,9 @@
 import json
+import time
 from pathlib import Path
 
+import boto3
+from botocore.config import Config
 from langchain_aws import ChatBedrockConverse
 from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel, Field
@@ -9,6 +12,8 @@ from pr_review_agent.config import settings
 
 DATA_DIR = Path(__file__).parent
 SONNET_MODEL_ID = "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
+DELAY_BETWEEN_CALLS_S = 2
+_BOTO_CONFIG = Config(retries={"max_attempts": 10, "mode": "adaptive"})
 
 SYSTEM_PROMPT = (
     "You are labeling commits for a training dataset. Decide whether a "
@@ -26,32 +31,45 @@ class SecurityLabel(BaseModel):
     rationale: str = Field(description="One sentence explaining the label")
 
 
+def _label_one(example: dict, structured_llm) -> dict:
+    content = f"Commit message: {example['message']}\n\nDiff:\n{example['diff']}"
+    result: SecurityLabel = structured_llm.invoke(
+        [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=content)]
+    )
+    return {
+        **example,
+        "label": result.label,
+        "confidence": result.confidence,
+        "rationale": result.rationale,
+    }
+
+
 def label_pool() -> None:
-    llm = ChatBedrockConverse(model=SONNET_MODEL_ID, region_name=settings.aws_region)
+    client = boto3.client("bedrock-runtime", region_name=settings.aws_region, config=_BOTO_CONFIG)
+    llm = ChatBedrockConverse(model=SONNET_MODEL_ID, client=client)
     structured_llm = llm.with_structured_output(SecurityLabel)
 
     pool_path = DATA_DIR / "unlabeled_pool.jsonl"
     examples = [json.loads(line) for line in pool_path.read_text().splitlines() if line]
 
-    labeled = []
-    for example in examples:
-        content = f"Commit message: {example['message']}\n\nDiff:\n{example['diff']}"
-        result: SecurityLabel = structured_llm.invoke(
-            [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=content)]
-        )
-        labeled.append(
-            {
-                **example,
-                "label": result.label,
-                "confidence": result.confidence,
-                "rationale": result.rationale,
-            }
-        )
-        print(f"{example['repo']}@{example['sha'][:7]}: label={result.label} confidence={result.confidence:.2f}")
-
     out_path = DATA_DIR / "labeled_pool.jsonl"
-    out_path.write_text("\n".join(json.dumps(e) for e in labeled) + "\n")
-    print(f"Wrote {len(labeled)} labeled examples to {out_path}")
+    labeled_count = 0
+    errors = 0
+    with out_path.open("w") as out_file:
+        for i, example in enumerate(examples, 1):
+            try:
+                labeled = _label_one(example, structured_llm)
+                out_file.write(json.dumps(labeled) + "\n")
+                out_file.flush()
+                labeled_count += 1
+            except Exception as e:
+                errors += 1
+                print(f"  skipped one example due to error: {e}")
+            if i % 25 == 0 or i == len(examples):
+                print(f"  processed {i}/{len(examples)} ({labeled_count} labeled, {errors} errors)")
+            time.sleep(DELAY_BETWEEN_CALLS_S)
+
+    print(f"Wrote {labeled_count} labeled examples to {out_path}")
 
 
 if __name__ == "__main__":
