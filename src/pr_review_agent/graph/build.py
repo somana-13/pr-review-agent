@@ -9,7 +9,9 @@ from pr_review_agent.graph.nodes.planner import planner_router, route_to_special
 from pr_review_agent.graph.nodes.security_specialist import security_specialist
 from pr_review_agent.graph.nodes.style_specialist import style_specialist
 from pr_review_agent.graph.nodes.synthesizer import synthesizer
-from pr_review_agent.graph.nodes.test_coverage_specialist import test_coverage_specialist
+from pr_review_agent.graph.nodes.test_coverage_specialist import (
+    test_coverage_specialist,
+)
 from pr_review_agent.graph.state import ReviewState
 
 

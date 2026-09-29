@@ -22,4 +22,10 @@ jobs:
         run: ruff check src/ finetune/ tests/
 
       - name: Run tests
+        env:
+          # dummy values: nothing in the unit-test suite actually calls out
+          # to GitHub or Bedrock, but pydantic-settings validates Settings()
+          # eagerly on import, so these two required fields must be present
+          GITHUB_TOKEN: dummy-token-for-tests
+          GUARDRAIL_ID: dummy-guardrail-id-for-tests
         run: pytest -v

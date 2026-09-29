@@ -12,6 +12,7 @@ def make_run_semgrep_tool(workspace_path: str):
         {path, check_id, message, severity}."""
         result = subprocess.run(
             ["semgrep", "--config", "p/security-audit", "--config", "p/secrets", "--json", workspace_path],
+            check=False,  # semgrep exits non-zero when it finds issues -- that's the expected case
             capture_output=True,
             text=True,
             timeout=180,

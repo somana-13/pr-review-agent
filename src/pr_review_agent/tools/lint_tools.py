@@ -15,6 +15,7 @@ def make_run_linter_tool(workspace_path: str, changed_files: list[str]):
         result = subprocess.run(
             ["ruff", "check", "--output-format=json", *python_files],
             cwd=workspace_path,
+            check=False,  # ruff exits non-zero when it finds issues -- that's the expected case
             capture_output=True,
             text=True,
             timeout=60,
